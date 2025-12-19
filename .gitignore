@@ -1,0 +1,18 @@
+# dependencies
+node_modules/
+
+# environment variables
+.env
+
+# Prisma
+prisma/migrations/*/migration_lock.toml
+prisma/dev.db
+/src/generated/prisma
+
+# build output
+dist/
+build/
+
+# OS / editor
+.DS_Store
+.vscode/
