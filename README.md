@@ -1,4 +1,4 @@
-# airxdd
+# Pokemon Hotel
 
 A full-stack hotel booking application built to emulate modern backend and full-stack development workflows.
 
@@ -6,7 +6,7 @@ A full-stack hotel booking application built to emulate modern backend and full-
 
 ## 🚀 Overview
 
-**airxdd** is a hotel booking platform designed to explore clean API design, database modeling, and real-world backend architecture. The project focuses on scalability, maintainability, and industry-standard tooling.
+**Pokemon Hotel** A game-inspired hotel and encounter platform built to demonstrate real-world backend architecture, REST API design, and relational database modeling using Node.js and PostgreSQL.
 
 ---
 
@@ -15,7 +15,6 @@ A full-stack hotel booking application built to emulate modern backend and full-
 ### 🖥️ Frontend
 - **React** – Component-based UI library
 - **JavaScript (ES6+)** – Core frontend language
-- **HTML**
 
 ---
 

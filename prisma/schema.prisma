@@ -6,11 +6,13 @@
 
 generator client {
   provider = "prisma-client"
+  previewFeatures = ["accelerate"]
   output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
 }
 
 model Hotel {
