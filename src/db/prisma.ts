@@ -9,8 +9,11 @@ import { withAccelerate } from "@prisma/extension-accelerate";
  * - Logs warnings and errors only (keeps noise low)
  */
 const prisma = new PrismaClient({
-  accelerateUrl: process.env.PRISMA_ACCELERATE_URL!,
   log: ["warn", "error"],
-}).$extends(withAccelerate());
+}).$extends(
+  withAccelerate({
+    url: process.env.PRISMA_ACCELERATE_URL,
+  })
+);
 
 export default prisma;

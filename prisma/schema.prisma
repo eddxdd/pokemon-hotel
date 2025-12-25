@@ -6,20 +6,202 @@
 
 generator client {
   provider = "prisma-client"
-  previewFeatures = ["accelerate"]
   output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL")
 }
 
-model Hotel {
+// Biome/Environment types (beach, mountain, forest, etc.)
+enum BiomeType {
+  BEACH
+  MOUNTAIN
+  FOREST
+  DESERT
+  OCEAN
+  GRASSLAND
+  CAVE
+  URBAN
+}
+
+// Card rarity tiers
+enum CardRarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+// Trainer model - represents users/trainers
+model Trainer {
   id        Int      @id @default(autoincrement())
-  name      String
-  city      String
-  country   String
+  username  String   @unique
+  email     String   @unique
+  level     Int      @default(1)
+  experience Int     @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Relations
+  bookings  Booking[]
+  cards     TrainerCard[]
+  tradesAsSender    Trade[] @relation("TradeSender")
+  tradesAsReceiver  Trade[] @relation("TradeReceiver")
+}
+
+// Hotel model - represents different hotels in different biomes
+model Hotel {
+  id          Int       @id @default(autoincrement())
+  name        String
+  city        String
+  country     String
+  biome       BiomeType
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  rooms       Room[]
+  bookings    Booking[]
+}
+
+// Room model - individual rooms in hotels
+model Room {
+  id          Int      @id @default(autoincrement())
+  hotelId     Int
+  roomNumber  String
+  capacity    Int      @default(1)
+  pricePerNight Decimal @db.Decimal(10, 2)
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  hotel       Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  bookings    Booking[]
+
+  @@unique([hotelId, roomNumber])
+  @@index([hotelId])
+}
+
+// Booking model - reservations made by trainers
+model Booking {
+  id          Int      @id @default(autoincrement())
+  trainerId   Int
+  hotelId     Int
+  roomId      Int
+  checkIn     DateTime
+  checkOut    DateTime
+  totalPrice  Decimal  @db.Decimal(10, 2)
+  status      String   @default("confirmed") // confirmed, cancelled, completed
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  trainer     Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  hotel       Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  encounters  PokemonEncounter[]
+
+  @@index([trainerId])
+  @@index([hotelId])
+  @@index([checkIn, checkOut])
+}
+
+// Pokemon Card model - represents different Pokemon cards
+model PokemonCard {
+  id          Int       @id @default(autoincrement())
+  pokemonName String
+  pokedexNumber Int
+  rarity      CardRarity
+  imageUrl    String?
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  trainerCards TrainerCard[]
+  spawnRates   BiomeSpawnRate[]
+  encounters   PokemonEncounter[]
+
+  @@unique([pokemonName, rarity])
+  @@index([pokedexNumber])
+  @@index([rarity])
+}
+
+// TrainerCard model - cards owned by trainers (junction table)
+model TrainerCard {
+  id            Int      @id @default(autoincrement())
+  trainerId     Int
+  cardId        Int
+  quantity      Int      @default(1)
+  obtainedAt    DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  trainer       Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  card          PokemonCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@unique([trainerId, cardId])
+  @@index([trainerId])
+  @@index([cardId])
+}
+
+// BiomeSpawnRate model - defines spawn rates for Pokemon in different biomes
+model BiomeSpawnRate {
+  id          Int      @id @default(autoincrement())
+  cardId      Int
+  biome       BiomeType
+  spawnChance Decimal  @db.Decimal(5, 4) // 0.0000 to 1.0000 (0% to 100%)
+  minLevel    Int      @default(1) // Minimum trainer level to encounter
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  card        PokemonCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@unique([cardId, biome])
+  @@index([biome])
+  @@index([cardId])
+}
+
+// PokemonEncounter model - tracks when trainers encounter Pokemon during bookings
+model PokemonEncounter {
+  id          Int      @id @default(autoincrement())
+  bookingId   Int
+  cardId      Int
+  rarity      CardRarity
+  encounteredAt DateTime @default(now())
+
+  // Relations
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  card        PokemonCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([cardId])
+  @@index([encounteredAt])
+}
+
+// Trade model - for future trading system
+model Trade {
+  id            Int      @id @default(autoincrement())
+  senderId      Int
+  receiverId    Int
+  senderCardId  Int
+  receiverCardId Int?
+  status        String   @default("pending") // pending, accepted, rejected, cancelled
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  sender        Trainer  @relation("TradeSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver      Trainer  @relation("TradeReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([status])
 }
