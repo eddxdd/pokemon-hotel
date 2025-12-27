@@ -1,5 +1,5 @@
 # Multi-stage build for optimized production image
-FROM node:18-alpine AS builder
+FROM node:22-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -14,6 +14,10 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# Accept build argument for database URL (not actually used during generate, but required by config)
+ARG DIRECT_DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy
+ENV DIRECT_DATABASE_URL=$DIRECT_DATABASE_URL
+
 # Generate Prisma Client
 RUN npx prisma generate
 
@@ -21,7 +25,7 @@ RUN npx prisma generate
 RUN npm run build
 
 # Production stage
-FROM node:18-alpine AS production
+FROM node:22-alpine AS production
 
 # Set working directory
 WORKDIR /app
@@ -41,6 +45,7 @@ RUN npm ci --only=production && \
 COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nodejs:nodejs /app/src/generated ./src/generated
 COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nodejs:nodejs /app/prisma.config.ts ./prisma.config.ts
 
 # Switch to non-root user
 USER nodejs

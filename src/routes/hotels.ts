@@ -31,6 +31,7 @@ type CreateHotelBody = {
   name?: unknown;
   city?: unknown;
   country?: unknown;
+  biome?: unknown;
 };
 
 /**
@@ -74,9 +75,10 @@ router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
       return res.status(404).json({ error: "Hotel not found" });
     }
 
-    res.json(hotel);
+    return res.json(hotel);
   } catch (err) {
     next(err);
+    return; // Explicit return for TypeScript
   }
 });
 
@@ -87,32 +89,53 @@ router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
 router.post("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
     // Extract fields from request body
-    const { name, city, country } = (req.body ?? {}) as CreateHotelBody;
+    const { name, city, country, biome } = (req.body ?? {}) as CreateHotelBody;
 
     /**
      * Validate input:
      * - must exist
      * - must be strings
      * - must not be empty
+     * - biome must be a valid BiomeType enum value
      */
+    const validBiomes = [
+      "BEACH",
+      "MOUNTAIN",
+      "FOREST",
+      "DESERT",
+      "OCEAN",
+      "GRASSLAND",
+      "CAVE",
+      "URBAN",
+    ] as const;
+
+    const biomeUpper = typeof biome === "string" ? biome.toUpperCase() : "";
+
     if (
       typeof name !== "string" ||
       typeof city !== "string" ||
       typeof country !== "string" ||
+      typeof biome !== "string" ||
       name.trim() === "" ||
       city.trim() === "" ||
-      country.trim() === ""
+      country.trim() === "" ||
+      !validBiomes.includes(biomeUpper as (typeof validBiomes)[number])
     ) {
-      throw new HttpError("name, city, and country are required", 400);
+      throw new HttpError(
+        "name, city, country, and biome (BEACH, MOUNTAIN, FOREST, DESERT, OCEAN, GRASSLAND, CAVE, URBAN) are required",
+        400
+      );
     }
 
     // Create the hotel in the database
+    // Note: biome field will be available after prisma generate runs in Docker build
     const hotel = await prisma.hotel.create({
       data: {
         name: name.trim(),
         city: city.trim(),
         country: country.trim(),
-      },
+        biome: biomeUpper as any, // Type assertion needed until Prisma client is regenerated
+      } as any, // Temporary type assertion - will be fixed when Prisma client regenerates with biome field
     });
 
     // 201 = resource successfully created

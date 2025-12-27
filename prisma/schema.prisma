@@ -41,12 +41,14 @@ model Trainer {
   email     String   @unique
   level     Int      @default(1)
   experience Int     @default(0)
+  balance   Decimal  @default(0.00) @db.Decimal(10, 2)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
   bookings  Booking[]
   cards     TrainerCard[]
+  reviews   Review[]
   tradesAsSender    Trade[] @relation("TradeSender")
   tradesAsReceiver  Trade[] @relation("TradeReceiver")
 }
@@ -65,6 +67,7 @@ model Hotel {
   // Relations
   rooms       Room[]
   bookings    Booking[]
+  reviews     Review[]
 }
 
 // Room model - individual rooms in hotels
@@ -104,6 +107,7 @@ model Booking {
   hotel       Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
   room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
   encounters  PokemonEncounter[]
+  review      Review?
 
   @@index([trainerId])
   @@index([hotelId])
@@ -204,4 +208,26 @@ model Trade {
   @@index([senderId])
   @@index([receiverId])
   @@index([status])
+}
+
+// Review model - hotel reviews written by trainers after their stay
+model Review {
+  id          Int      @id @default(autoincrement())
+  bookingId   Int      @unique
+  trainerId   Int
+  hotelId     Int
+  rating      Int      // 1-5 stars
+  title       String?
+  comment     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  trainer     Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  hotel       Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  @@index([hotelId])
+  @@index([trainerId])
+  @@index([rating])
 }

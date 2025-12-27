@@ -85,10 +85,13 @@ PORT=4000
 NODE_ENV=development
 
 # Database Configuration
+# For development without Accelerate, use direct PostgreSQL connection
+# When using Accelerate, change DATABASE_URL to use prisma:// protocol
 DATABASE_URL=postgresql://user:password@localhost:5432/pokemon_hotel?schema=public
 
-# Prisma Accelerate Configuration
-PRISMA_ACCELERATE_URL=https://your-accelerate-url.prisma-data-platform.com
+# Direct database connection for migrations and introspection
+# This should always use the direct postgresql:// connection
+DIRECT_DATABASE_URL=postgresql://user:password@localhost:5432/pokemon_hotel?schema=public
 
 # Frontend Configuration
 FRONTEND_URL=http://localhost:3000

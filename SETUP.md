@@ -12,10 +12,13 @@ PORT=4000
 NODE_ENV=development
 
 # Database Configuration
+# For development without Accelerate, use direct PostgreSQL connection
+# When using Accelerate, change DATABASE_URL to use prisma:// protocol
 DATABASE_URL=postgresql://user:password@localhost:5432/pokemon_hotel?schema=public
 
-# Prisma Accelerate Configuration
-PRISMA_ACCELERATE_URL=https://your-accelerate-url.prisma-data-platform.com
+# Direct database connection for migrations and introspection
+# This should always use the direct postgresql:// connection
+DIRECT_DATABASE_URL=postgresql://user:password@localhost:5432/pokemon_hotel?schema=public
 
 # Frontend Configuration
 FRONTEND_URL=http://localhost:3000
@@ -57,10 +60,14 @@ npm run dev
 
 ## Next Steps
 
-1. **Set up Prisma Accelerate**:
+1. **Set up Prisma Accelerate** (optional):
    - Sign up at https://accelerate.prisma.io
-   - Create a new project
-   - Copy the Accelerate URL to your `.env` file
+   - Create a new project and enable Accelerate
+   - Update `DATABASE_URL` in your `.env` file to use the `prisma://` protocol:
+     ```
+     DATABASE_URL="prisma://accelerate.prisma-data.net/?api_key=__API_KEY__"
+     ```
+   - Keep `DIRECT_DATABASE_URL` as your direct PostgreSQL connection for migrations
 
 2. **Run Database Migrations**:
    - The schema has been expanded with all Pokemon Hotel features

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database
   postgres:
@@ -24,12 +22,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        DIRECT_DATABASE_URL: ${DIRECT_DATABASE_URL}
     container_name: pokemon-hotel-api
     environment:
       NODE_ENV: production
       PORT: 4000
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-pokemon_hotel}?schema=public
-      PRISMA_ACCELERATE_URL: ${PRISMA_ACCELERATE_URL}
+      DIRECT_DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-pokemon_hotel}?schema=public
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
     ports:
       - "4000:4000"
