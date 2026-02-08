@@ -7,6 +7,7 @@ import rateLimit from "express-rate-limit";
 
 import healthRoutes from "./routes/health.js";
 import hotelRoutes from "./routes/hotels.js";
+import authRoutes from "./routes/auth.js";
 import errorHandler from "./middleware/errorHandler.js";
 
 const app = express();
@@ -42,10 +43,15 @@ app.use(limiter);
 app.use(
     pinoHttp({
         logger,
-        customLogLevel: (res, err) => {
+        customLogLevel: (_req, res, err) => {
             const statusCode = res.statusCode ?? 200;
-            if (err || statusCode >= 500) return 'error';
-            if (statusCode >= 400) return 'warn';
+            // Check status code first to properly categorize client vs server errors
+            // 4xx responses (client errors) should be logged as warn, even if err is present
+            if (statusCode >= 400 && statusCode < 500) return 'warn';
+            // 5xx responses (server errors) should be logged as error
+            if (statusCode >= 500) return 'error';
+            // Fallback: if error exists but statusCode is not in 4xx/5xx range, treat as error
+            if (err) return 'error';
             return 'info';
         },
     })
@@ -58,6 +64,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Routes
 app.use('/hotels', hotelRoutes);
 app.use('/health', healthRoutes);
+app.use('/auth', authRoutes);
 
 // Error catcher (must be AFTER routes!)
 app.use(errorHandler);

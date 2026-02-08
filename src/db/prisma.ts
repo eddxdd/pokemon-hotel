@@ -22,7 +22,7 @@ if (connectionString.startsWith("prisma://")) {
   });
   prismaInstance = basePrisma.$extends(withAccelerate()) as PrismaClient;
 } else {
-  // Use direct connection via PrismaPg adapter
+  // Use direct connection via PrismaPg adapter (required for custom output path)
   const adapter = new PrismaPg({ connectionString });
   prismaInstance = new PrismaClient({
     adapter,

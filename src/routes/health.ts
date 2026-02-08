@@ -9,7 +9,7 @@ const router = Router();
  */
 router.get("/", (_req: Request, res: Response) => {
   res.status(200).json({
-    status: "ok",
+    status: "Server is running",
     timestamp: new Date().toISOString(),
   });
 });
