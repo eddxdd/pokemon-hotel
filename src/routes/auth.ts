@@ -61,7 +61,7 @@ const loginSchema = z.object({
 
 /**
  * POST /auth/register
- * Register a new trainer.
+ * Register a new user.
  */
 router.post(
   "/register",
@@ -87,7 +87,7 @@ router.post(
       }
 
       // Check if username already exists
-      const existingUsername = await prisma.trainer.findUnique({
+      const existingUsername = await prisma.user.findUnique({
         where: { username },
       });
 
@@ -96,7 +96,7 @@ router.post(
       }
 
       // Check if email already exists
-      const existingEmail = await prisma.trainer.findUnique({
+      const existingEmail = await prisma.user.findUnique({
         where: { email },
       });
 
@@ -107,8 +107,8 @@ router.post(
       // Hash password
       const hashedPassword = await hashPassword(password);
 
-      // Create trainer in database
-      const trainer = await prisma.trainer.create({
+      // Create user in database
+      const user = await prisma.user.create({
         data: {
           username,
           email,
@@ -118,6 +118,7 @@ router.post(
           id: true,
           username: true,
           email: true,
+          role: true,
           level: true,
           experience: true,
           createdAt: true,
@@ -127,18 +128,20 @@ router.post(
 
       // Generate JWT token
       const token = generateToken({
-        trainerId: trainer.id.toString(),
-        username: trainer.username,
-        email: trainer.email,
+        userId: user.id.toString(),
+        username: user.username,
+        email: user.email,
+        role: user.role,
       });
 
-      // Return token and trainer info (excluding password)
+      // Return token and user info (excluding password)
       res.status(201).json({
         token,
-        trainer: {
-          id: trainer.id,
-          username: trainer.username,
-          email: trainer.email,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
         },
       });
     } catch (err) {
@@ -149,7 +152,7 @@ router.post(
 
 /**
  * POST /auth/login
- * Login an existing trainer.
+ * Login an existing user.
  */
 router.post(
   "/login",
@@ -165,11 +168,11 @@ router.post(
 
       const { usernameOrEmail, password } = validationResult.data;
 
-      // Find trainer by username or email
+      // Find user by username or email
       // Check if it looks like an email (contains @)
       const isEmail = usernameOrEmail.includes("@");
 
-      const trainer = await prisma.trainer.findUnique({
+      const user = await prisma.user.findUnique({
         where: isEmail
           ? { email: usernameOrEmail.toLowerCase().trim() }
           : { username: usernameOrEmail.trim() },
@@ -177,16 +180,17 @@ router.post(
           id: true,
           username: true,
           email: true,
+          role: true,
           password: true,
         },
       });
 
-      if (!trainer) {
+      if (!user) {
         throw new HttpError("Invalid username/email or password", 401);
       }
 
       // Verify password
-      const isPasswordValid = await comparePassword(password, trainer.password);
+      const isPasswordValid = await comparePassword(password, user.password);
 
       if (!isPasswordValid) {
         throw new HttpError("Invalid username/email or password", 401);
@@ -194,18 +198,20 @@ router.post(
 
       // Generate JWT token
       const token = generateToken({
-        trainerId: trainer.id.toString(),
-        username: trainer.username,
-        email: trainer.email,
+        userId: user.id.toString(),
+        username: user.username,
+        email: user.email,
+        role: user.role,
       });
 
-      // Return token and trainer info (excluding password)
+      // Return token and user info (excluding password)
       res.json({
         token,
-        trainer: {
-          id: trainer.id,
-          username: trainer.username,
-          email: trainer.email,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
         },
       });
     } catch (err) {

@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, { type SignOptions } from "jsonwebtoken";
 
 /**
  * Hash a password using bcrypt
@@ -28,14 +28,15 @@ export async function comparePassword(
  * JWT token payload structure
  */
 export interface JwtPayload {
-    trainerId: string;
+    userId: string;
     username: string;
     email: string;
+    role: "TRAINER" | "ADMIN";
 }
 
 /**
- * Generate a JWT token for a trainer
- * @param payload - Token payload containing trainerId, username, and email
+ * Generate a JWT token for a user
+ * @param payload - Token payload containing userId, username, email, and role
  * @returns JWT token string
  * @throws Error if JWT_SECRET is not set
  */
@@ -45,7 +46,7 @@ export function generateToken(payload: JwtPayload): string {
         throw new Error("JWT_SECRET environment variable is not set");
     }
 
-    const expiresIn = process.env.JWT_EXPIRES_IN || "7d";
+    const expiresIn = (process.env.JWT_EXPIRES_IN || "7d") as SignOptions["expiresIn"];
 
     return jwt.sign(payload, secret, { expiresIn });
 }

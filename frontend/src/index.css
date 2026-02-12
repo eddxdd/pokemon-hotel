@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+html,
+body,
+#root {
+  @apply h-full min-h-screen;
+}
+
+/* Note: Tailwind utilities are available throughout the app via className.
+ * For now, component-level styles like .panel/.field remain defined in App.css
+ * to avoid issues with @apply and the current Tailwind/PostCSS setup.
+ */

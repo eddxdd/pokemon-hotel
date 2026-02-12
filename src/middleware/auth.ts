@@ -2,12 +2,12 @@ import type { NextFunction, Request, Response } from "express";
 import { verifyToken, type JwtPayload } from "../utils/auth.js";
 
 /**
- * Extend Express Request type to include trainer information
+ * Extend Express Request type to include user information
  */
 declare global {
   namespace Express {
     interface Request {
-      trainer?: JwtPayload;
+      user?: JwtPayload;
     }
   }
 }
@@ -15,14 +15,14 @@ declare global {
 /**
  * Authentication middleware to verify JWT tokens.
  * Extracts the token from the Authorization header and verifies it.
- * If valid, attaches the trainer payload to req.trainer.
+ * If valid, attaches the user payload to req.user.
  * If invalid or missing, returns 401 Unauthorized.
  */
 export default function authenticate(
   req: Request,
   res: Response,
   next: NextFunction
-) {
+): Response | void {
   try {
     // Get token from Authorization header
     const authHeader = req.headers.authorization;
@@ -47,9 +47,10 @@ export default function authenticate(
     // Verify and decode token
     try {
       const payload = verifyToken(token);
-      // Attach trainer information to request object
-      req.trainer = payload;
+      // Attach user information to request object
+      req.user = payload;
       next();
+      return;
     } catch (error) {
       if (error instanceof Error) {
         return res.status(401).json({

@@ -34,12 +34,19 @@ enum CardRarity {
   LEGENDARY
 }
 
-// Trainer model - represents users/trainers
-model Trainer {
+// User roles for access control
+enum UserRole {
+  TRAINER @map("Trainer")
+  ADMIN   @map("admin")
+}
+
+// User model - represents application users
+model User {
   id        Int      @id @default(autoincrement())
   username  String   @unique
   email     String   @unique
   password  String
+  role      UserRole @default(TRAINER)
   level     Int      @default(1)
   experience Int     @default(0)
   balance   Decimal  @default(0.00) @db.Decimal(10, 2)
@@ -104,7 +111,7 @@ model Booking {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  trainer     Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  trainer     User     @relation(fields: [trainerId], references: [id], onDelete: Cascade)
   hotel       Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
   room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
   encounters  PokemonEncounter[]
@@ -147,7 +154,7 @@ model TrainerCard {
   updatedAt     DateTime @updatedAt
 
   // Relations
-  trainer       Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  trainer       User      @relation(fields: [trainerId], references: [id], onDelete: Cascade)
   card          PokemonCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
 
   @@unique([trainerId, cardId])
@@ -203,8 +210,8 @@ model Trade {
   updatedAt     DateTime @updatedAt
 
   // Relations
-  sender        Trainer  @relation("TradeSender", fields: [senderId], references: [id], onDelete: Cascade)
-  receiver      Trainer  @relation("TradeReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender        User     @relation("TradeSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver      User     @relation("TradeReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
 
   @@index([senderId])
   @@index([receiverId])
@@ -225,7 +232,7 @@ model Review {
 
   // Relations
   booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  trainer     Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  trainer     User     @relation(fields: [trainerId], references: [id], onDelete: Cascade)
   hotel       Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
 
   @@index([hotelId])
