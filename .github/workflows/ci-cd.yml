@@ -8,10 +8,10 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: pokemon-hotel-api
-  ECS_CLUSTER: pokemon-hotel-cluster
-  ECS_SERVICE: pokemon-hotel-api
-  TASK_DEFINITION: pokemon-hotel-api
+  ECR_REPOSITORY: master-ball-api
+  ECS_CLUSTER: master-ball-cluster
+  ECS_SERVICE: master-ball-api
+  TASK_DEFINITION: master-ball-api
 
 jobs:
   test:
@@ -78,7 +78,7 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: .aws/ecs-task-definition.json
-          container-name: pokemon-hotel-api
+          container-name: master-ball-api
           image: ${{ steps.build-image.outputs.image }}
 
       - name: Deploy Amazon ECS task definition

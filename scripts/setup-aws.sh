@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # AWS Infrastructure Setup Script
-# This script helps set up the initial AWS infrastructure for Pokemon Hotel
+# This script helps set up the initial AWS infrastructure for Master Ball
 
 set -e
 
@@ -14,12 +14,12 @@ NC='\033[0m'
 AWS_REGION=${AWS_REGION:-us-east-1}
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
-echo -e "${GREEN}Setting up AWS infrastructure for Pokemon Hotel...${NC}"
+echo -e "${GREEN}Setting up AWS infrastructure for Master Ball...${NC}"
 
 # Create ECR Repository
 echo -e "${YELLOW}Creating ECR repository...${NC}"
 aws ecr create-repository \
-    --repository-name pokemon-hotel-api \
+    --repository-name master-ball-api \
     --region ${AWS_REGION} \
     --image-scanning-configuration scanOnPush=true \
     || echo -e "${YELLOW}Repository may already exist${NC}"
@@ -27,14 +27,14 @@ aws ecr create-repository \
 # Create ECS Cluster
 echo -e "${YELLOW}Creating ECS cluster...${NC}"
 aws ecs create-cluster \
-    --cluster-name pokemon-hotel-cluster \
+    --cluster-name master-ball-cluster \
     --region ${AWS_REGION} \
     || echo -e "${YELLOW}Cluster may already exist${NC}"
 
 # Create CloudWatch Log Group
 echo -e "${YELLOW}Creating CloudWatch log group...${NC}"
 aws logs create-log-group \
-    --log-group-name /ecs/pokemon-hotel-api \
+    --log-group-name /ecs/master-ball-api \
     --region ${AWS_REGION} \
     || echo -e "${YELLOW}Log group may already exist${NC}"
 

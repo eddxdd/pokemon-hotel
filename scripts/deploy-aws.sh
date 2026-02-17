@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# AWS Deployment Script for Pokemon Hotel API
+# AWS Deployment Script for Master Ball API
 # This script builds and deploys the application to AWS ECS/Fargate
 
 set -e  # Exit on any error
@@ -14,10 +14,10 @@ NC='\033[0m' # No Color
 # Configuration (update these values)
 AWS_REGION=${AWS_REGION:-us-east-1}
 AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID:-""}
-ECR_REPOSITORY=${ECR_REPOSITORY:-pokemon-hotel-api}
-ECS_CLUSTER=${ECS_CLUSTER:-pokemon-hotel-cluster}
-ECS_SERVICE=${ECS_SERVICE:-pokemon-hotel-api}
-TASK_DEFINITION=${TASK_DEFINITION:-pokemon-hotel-api}
+ECR_REPOSITORY=${ECR_REPOSITORY:-master-ball-api}
+ECS_CLUSTER=${ECS_CLUSTER:-master-ball-cluster}
+ECS_SERVICE=${ECS_SERVICE:-master-ball-api}
+TASK_DEFINITION=${TASK_DEFINITION:-master-ball-api}
 
 echo -e "${GREEN}Starting AWS deployment...${NC}"
 

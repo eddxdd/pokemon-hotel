@@ -18,7 +18,7 @@ declare global {
  * If valid, attaches the user payload to req.user.
  * If invalid or missing, returns 401 Unauthorized.
  */
-export default function authenticate(
+export function authenticate(
   req: Request,
   res: Response,
   next: NextFunction
@@ -66,3 +66,25 @@ export default function authenticate(
   }
 }
 
+/**
+ * Middleware to require admin role.
+ * Must be used after authenticate() middleware.
+ */
+export function requireAdmin(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Response | void {
+  if (!req.user) {
+    return res.status(401).json({
+      error: "Authentication required",
+    });
+  }  if (req.user.role !== "ADMIN") {
+    return res.status(403).json({
+      error: "Admin access required",
+    });
+  }
+
+  next();
+}// Default export for backward compatibility
+export default authenticate;

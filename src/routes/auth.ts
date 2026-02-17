@@ -128,6 +128,7 @@ router.post(
 
       // Generate JWT token
       const token = generateToken({
+        id: user.id,
         userId: user.id.toString(),
         username: user.username,
         email: user.email,
@@ -198,6 +199,7 @@ router.post(
 
       // Generate JWT token
       const token = generateToken({
+        id: user.id,
         userId: user.id.toString(),
         username: user.username,
         email: user.email,

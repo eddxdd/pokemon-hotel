@@ -214,3 +214,211 @@ export const createHotel = (payload: CreateHotelPayload) =>
     body: JSON.stringify(payload),
   });
 
+export type CreateUserPayload = {
+  username: string;
+  email: string;
+  password: string;
+  role?: UserRole;
+};
+
+export const listUsers = (token: string) =>
+  request<User[]>("/users", {
+    method: "GET",
+    headers: buildHeaders(token),
+  });
+
+export const getUserById = (id: number, token: string) =>
+  request<User>(`/users/${id}`, {
+    method: "GET",
+    headers: buildHeaders(token),
+  });
+
+export const createUser = (payload: CreateUserPayload, token: string) =>
+  request<User>("/users", {
+    method: "POST",
+    headers: buildHeaders(token),
+    body: JSON.stringify(payload),
+  });
+
+export const deleteUser = (id: number, token: string) =>
+  request<void>(`/users/${id}`, {
+    method: "DELETE",
+    headers: buildHeaders(token),
+  });
+
+export type UpdateUserRolePayload = {
+  role: UserRole;
+};
+
+export const updateUserRole = (id: number, payload: UpdateUserRolePayload, token: string) =>
+  request<User>(`/users/${id}/role`, {
+    method: "PATCH",
+    headers: buildHeaders(token),
+    body: JSON.stringify(payload),
+  });
+
+// Biome types
+export type Biome = {
+  id: number;
+  name: string;
+  description: string | null;
+  imageUrl: string | null;
+};
+
+export type Pokemon = {
+  id: number;
+  name: string;
+  pokedexNumber: number;
+  type1: string;
+  type2: string | null;
+  evolutionStage: number;
+  fullyEvolved: boolean;
+  color: string;
+  generation: number;
+  imageUrl: string | null;
+};
+
+export type Card = {
+  id: number;
+  tcgdexId: string;
+  pokemonName: string;
+  setName: string;
+  rarity: string;
+  tier: number;
+  imageUrl: string;
+  imageUrlLarge: string | null;
+  pokemon?: Pokemon;
+};
+
+export type GuessFeedback = {
+  type1: 'correct' | 'partial' | 'wrong';
+  type2: 'correct' | 'partial' | 'wrong';
+  evolutionStage: 'correct' | 'wrong';
+  fullyEvolved: 'correct' | 'wrong';
+  color: 'correct' | 'wrong';
+  generation: 'correct' | 'wrong';
+};
+
+export type Guess = {
+  guessNum: number;
+  pokemon: Pokemon;
+  feedback: GuessFeedback;
+};
+
+export type Game = {
+  id: number;
+  biome: Biome;
+  timeOfDay: string;
+  guessesUsed: number;
+  maxGuesses: number;
+  completed: boolean;
+  won: boolean;
+  tier?: number;
+  guesses: Guess[];
+  answer?: Pokemon;
+  offeredCardIds?: number[];
+  createdAt: string;
+};export type PokedexEntry = {
+  id: number;
+  cardId: number;
+  discovered: string;
+  card: Card;
+};
+
+export type PokedexStats = {
+  totalCards: number;
+  collectedCards: number;
+  completionPercentage: number;
+  cardsByRarity: Record<string, number>;
+  cardsByBiome: Array<{ biome: string; count: number }>;
+  rarestCard: Card | null;
+};
+
+// Biome API
+export const listBiomes = () =>
+  request<Biome[]>("/biomes", {
+    method: "GET",
+  });
+
+export const getBiomeById = (id: number) =>
+  request<Biome>(`/biomes/${id}`, {
+    method: "GET",
+  });
+
+export const getBiomePokemon = (id: number, timeOfDay: 'day' | 'night') =>
+  request<Pokemon[]>(`/biomes/${id}/pokemon?timeOfDay=${timeOfDay}`, {
+    method: "GET",
+  });
+
+// Game API
+export type StartGamePayload = {
+  biomeId: number;
+  timeOfDay: 'day' | 'night';
+};
+
+export type SubmitGuessPayload = {
+  pokemonId: number;
+};
+
+export type CaptureCardPayload = {
+  cardId: number;
+};
+
+export const startGame = (payload: StartGamePayload, token: string) =>
+  request<Game>("/games", {
+    method: "POST",
+    headers: buildHeaders(token),
+    body: JSON.stringify(payload),
+  });
+
+export const getGame = (id: number, token: string) =>
+  request<Game>(`/games/${id}`, {
+    method: "GET",
+    headers: buildHeaders(token),
+  });
+
+export const submitGuess = (gameId: number, payload: SubmitGuessPayload, token: string) =>
+  request<{
+    guess: Guess;
+    gameCompleted: boolean;
+    won: boolean;
+    tier?: number;
+    answer?: Pokemon;
+    offeredCards?: Card[];
+  }>(`/games/${gameId}/guess`, {
+    method: "POST",
+    headers: buildHeaders(token),
+    body: JSON.stringify(payload),
+  });
+
+export const captureCard = (gameId: number, payload: CaptureCardPayload, token: string) =>
+  request<{ id: number; card: Card }>(`/games/${gameId}/capture`, {
+    method: "POST",
+    headers: buildHeaders(token),
+    body: JSON.stringify(payload),
+  });
+
+export const getGameHistory = (token: string) =>
+  request<Game[]>("/games/history", {
+    method: "GET",
+    headers: buildHeaders(token),
+  });
+
+// Pokedex API
+export const getPokedex = (token: string) =>
+  request<PokedexEntry[]>("/pokedex", {
+    method: "GET",
+    headers: buildHeaders(token),
+  });
+
+export const getPokedexStats = (token: string) =>
+  request<PokedexStats>("/pokedex/stats", {
+    method: "GET",
+    headers: buildHeaders(token),
+  });
+
+export const getPokedexCard = (cardId: number, token: string) =>
+  request<PokedexEntry>(`/pokedex/${cardId}`, {
+    method: "GET",
+    headers: buildHeaders(token),
+  });

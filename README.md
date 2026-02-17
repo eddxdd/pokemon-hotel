@@ -1,49 +1,68 @@
-# Pokemon Hotel 🏨✨
+# Master Ball ⚪🔴
 
-A full-stack hotel booking application with Pokemon encounters, built to emulate modern professional development workflows. Trainers can book rooms in different biomes (beach, mountain, forest, etc.) and encounter Pokemon cards with varying rarity tiers based on their trainer level.
+A Pokemon-themed Wordle game where trainers guess Pokemon based on attributes and collect TCG cards. Built with modern full-stack development practices featuring React 19, Express.js, Prisma ORM, and PostgreSQL.
 
 ---
 
 ## 🚀 Overview
 
-**Pokemon Hotel** is a game-inspired hotel and encounter platform that demonstrates real-world backend architecture, REST API design, and relational database modeling. The platform allows trainers to:
+**Master Ball** is a daily Pokemon guessing game with TCG card collection mechanics. Players choose a biome, guess Pokemon based on attributes (type, evolution stage, color, generation), and collect rare Pokemon Trading Card Game cards as rewards.
 
-- Book rooms in hotels across different biomes (beach, mountain, forest, desert, ocean, etc.)
-- Encounter Pokemon cards with biome-specific spawn rates
-- Collect cards with different rarity tiers (Common, Uncommon, Rare, Epic, Legendary)
-- Level up trainers to unlock rarer card encounters
-- Trade cards with other trainers (coming soon)
+### Game Features
+
+- 🎮 **Pokemon Wordle** - Guess Pokemon based on 6 attributes:
+  - Biome habitat
+  - Type 1 & Type 2
+  - Evolution stage (baby, basic, stage 1, stage 2)
+  - Fully evolved status
+  - Pokemon color
+  - Generation (Gen I - Gen IX)
+
+- 🗺️ **Biome Selection** - Choose from 9 unique biomes:
+  - Grassland, Forest, Beach, Sea, Cave, Mountain, City, Volcano, Cemetery
+  - Day/Night cycle affects spawn rates
+
+- 🃏 **TCG Card Collection** - Collect Pokemon Trading Card Game cards:
+  - **Tier-based rewards** (1-6 tries = Tier 1-6)
+  - **12 Rarity Types**: Common, Uncommon, Rare, Double Rare, Illustration Rare, Super Rare, Special Illustration Rare, Immersive, Shiny Rare, Shiny Super Rare, Ultra Rare, Hyper Rare
+  - **Pity System** - Guaranteed rare cards after consecutive poor performances
+  - **Pokedex Tracker** - Track your collection of 151 original Kanto Pokemon
+
+- 👤 **User Profiles** - Customizable avatars and banners with type-themed designs
 
 ---
 
 ## 🧱 Tech Stack
 
 ### 🖥️ Frontend
-- **React** – Component-based UI library (to be implemented)
+- **React 19** – Modern component-based UI library
 - **TypeScript** – Type-safe frontend development
+- **Vite** – Fast build tool and dev server
+- **Custom CSS** – Dark theme with neon accents and Pokemon-inspired design
+- **react-easy-crop** – Avatar/banner cropping
 
 ### 🧠 Backend
-- **Node.js** (v18+) – JavaScript runtime
-- **Express.js** (v5) – Web framework for building REST APIs
+- **Node.js** (v22+) – JavaScript runtime
+- **Express.js** (v5) – Web framework for REST APIs
 - **TypeScript** – Type-safe backend development
-- **REST API** – Stateless API architecture
+- **JWT Authentication** – Secure user sessions
+- **Bcrypt** – Password hashing
 
 ### 🗄️ Database & ORM
 - **PostgreSQL** – Relational database
-- **Prisma ORM** – Type-safe database access and migrations
-- **Prisma Accelerate** – Connection pooling and caching for better performance
+- **Prisma ORM** – Type-safe database access with migrations
+- **@prisma/adapter-pg** – PostgreSQL adapter for Prisma 7
+- **Prisma Studio** – Visual database management
+
+### 🃏 External APIs
+- **TCGdex API** – Pokemon Trading Card Game data
+- **PokeAPI** – Pokemon attributes and sprites
 
 ### 🔒 Security & Middleware
 - **Helmet** – Security HTTP headers
 - **CORS** – Cross-origin resource sharing
 - **express-rate-limit** – Rate limiting protection
-- **Zod** – Schema validation
-
-### ☁️ Infrastructure
-- **AWS ECS/Fargate** – Container orchestration
-- **AWS ECR** – Container registry
-- **Docker** – Containerization
-- **GitHub Actions** – CI/CD pipeline
+- **Error handling** – Centralized error middleware
 
 ---
 
@@ -51,11 +70,9 @@ A full-stack hotel booking application with Pokemon encounters, built to emulate
 
 Before you begin, ensure you have the following installed:
 
-- **Node.js** (v18 or higher)
+- **Node.js** (v22 or higher)
 - **npm** or **yarn**
-- **PostgreSQL** (v14 or higher) - for local development
-- **Docker** (optional, for containerized development)
-- **AWS CLI** (for deployment)
+- **PostgreSQL** (v14 or higher)
 - **Git**
 
 ---
@@ -66,7 +83,7 @@ Before you begin, ensure you have the following installed:
 
 ```bash
 git clone <your-repo-url>
-cd pokemon-hotel
+cd master-ball
 ```
 
 ### 2. Install Dependencies
@@ -84,27 +101,22 @@ Create a `.env` file in the root directory:
 PORT=4000
 NODE_ENV=development
 
-# Database Configuration
-# For development without Accelerate, use direct PostgreSQL connection
-# When using Accelerate, change DATABASE_URL to use prisma:// protocol
-DATABASE_URL=postgresql://user:password@localhost:5432/pokemon_hotel?schema=public
+# JWT Secret (generate a secure random string)
+JWT_SECRET=your-super-secret-jwt-key-here
 
-# Direct database connection for migrations and introspection
-# This should always use the direct postgresql:// connection
-DIRECT_DATABASE_URL=postgresql://user:password@localhost:5432/pokemon_hotel?schema=public
+# Database Configuration
+DATABASE_URL=postgresql://user:password@localhost:5432/master_ball?schema=public
 
 # Frontend Configuration
-FRONTEND_URL=http://localhost:3000
-CORS_ORIGIN=http://localhost:3000
+FRONTEND_URL=http://localhost:5173
+CORS_ORIGIN=http://localhost:5173
 ```
 
 ### 4. Database Setup
 
-#### Option A: Local PostgreSQL
-
 1. Create a PostgreSQL database:
 ```bash
-createdb pokemon_hotel
+createdb master_ball
 ```
 
 2. Run migrations:
@@ -117,23 +129,44 @@ npm run prisma:migrate
 npm run prisma:generate
 ```
 
-#### Option B: Docker Compose
-
+4. (Optional) Seed the database with Pokemon data:
 ```bash
-docker-compose up -d
+tsx src/scripts/seedWordle.ts
 ```
 
-This will start PostgreSQL and run migrations automatically.
+### 5. Add Card Images (Optional)
 
-### 5. Start Development Server
+If you have Pokemon TCG card images in zip format:
+
+1. Place zip files in `frontend/public/images/cards/`
+2. Run the local card image script:
+```bash
+npm run cards:use-local
+```
+
+### 6. Start Development Servers
+
+Run both backend and frontend concurrently:
 
 ```bash
 npm run dev
 ```
 
-The API will be available at `http://localhost:4000`
+This will start:
+- **Backend API** at `http://localhost:4000`
+- **Frontend** at `http://localhost:5173` (default Vite port)
 
-### 6. Prisma Studio (Optional)
+Alternatively, run them separately:
+
+```bash
+# Backend only
+npm run dev:backend
+
+# Frontend only
+npm run dev:frontend
+```
+
+### 7. Prisma Studio (Optional)
 
 To view and manage your database visually:
 
@@ -141,33 +174,60 @@ To view and manage your database visually:
 npm run prisma:studio
 ```
 
+Open at `http://localhost:5555`
+
 ---
 
 ## 📁 Project Structure
 
 ```
-pokemon-hotel/
+master-ball/
 ├── .github/
 │   └── workflows/          # CI/CD pipelines
-├── .aws/                   # AWS deployment configs
+├── frontend/               # React + Vite frontend
+│   ├── public/
+│   │   └── images/         # Avatar, banner, card, and UI assets
+│   ├── src/
+│   │   ├── components/     # React components (Wordle, Pokedex, etc.)
+│   │   ├── App.tsx         # Main application component
+│   │   ├── App.css         # Component styles (dark theme)
+│   │   ├── api.ts          # API client functions
+│   │   └── main.tsx        # React entry point
+│   ├── package.json
+│   └── vite.config.ts
 ├── prisma/
 │   ├── migrations/         # Database migrations
 │   └── schema.prisma       # Database schema
-├── scripts/                # Deployment scripts
 ├── src/
-│   ├── db/
+│   ├── lib/
 │   │   └── prisma.ts       # Prisma client setup
-│   ├── generated/          # Generated Prisma client
 │   ├── middleware/
+│   │   ├── auth.ts         # JWT authentication middleware
 │   │   └── errorHandler.ts # Global error handler
 │   ├── routes/
-│   │   ├── health.ts       # Health check endpoint
-│   │   └── hotels.ts       # Hotel routes
+│   │   ├── auth.ts         # Authentication routes
+│   │   ├── games.ts        # Wordle game routes
+│   │   ├── biomes.ts       # Biome selection routes
+│   │   ├── pokedex.ts      # Pokedex/collection routes
+│   │   ├── users.ts        # User management routes
+│   │   └── health.ts       # Health check endpoint
+│   ├── services/
+│   │   ├── wordleLogic.ts  # Wordle comparison logic
+│   │   ├── cardGenerator.ts # Card offer generation with pity
+│   │   ├── tcgdex.ts       # TCGdex API integration
+│   │   └── pokeapi.ts      # PokeAPI integration
+│   ├── scripts/
+│   │   ├── seedWordle.ts   # Seed Pokemon and biome data
+│   │   ├── seedCardsEnhanced.ts # Seed TCG cards
+│   │   └── useLocalCardImages.ts # Load local card images
+│   ├── utils/
+│   │   └── auth.ts         # Password hashing & JWT utilities
 │   ├── app.ts              # Express app configuration
 │   └── server.ts           # Server entry point
 ├── Dockerfile              # Docker configuration
 ├── docker-compose.yml      # Local development with Docker
-└── package.json
+├── package.json
+└── README.md
 ```
 
 ---
@@ -176,32 +236,43 @@ pokemon-hotel/
 
 ### Core Models
 
-- **Trainer** - User accounts with level and experience
-- **Hotel** - Hotels in different biomes
-- **Room** - Individual rooms in hotels
-- **Booking** - Reservations made by trainers
-- **PokemonCard** - Pokemon cards with rarity tiers
-- **TrainerCard** - Cards owned by trainers
-- **BiomeSpawnRate** - Spawn rates for Pokemon in different biomes
-- **PokemonEncounter** - Tracks encounters during bookings
-- **Trade** - Trading system (future feature)
+- **User** - Player accounts with customizable avatars/banners
+- **Biome** - 9 game biomes (Grassland, Forest, Beach, etc.)
+- **Pokemon** - 151 Kanto Pokemon with attributes
+- **PokemonSpawn** - Spawn rates for Pokemon in biomes (day/night)
+- **Card** - Pokemon TCG cards with rarity tiers
+- **Game** - Individual Wordle game sessions
+- **Guess** - Player guesses with feedback
+- **UserCard** - Cards captured by players
+- **PokedexEntry** - User's collection tracker
+- **PityTracker** - Pity system state
 
 ### Enums
 
-- **BiomeType**: BEACH, MOUNTAIN, FOREST, DESERT, OCEAN, GRASSLAND, CAVE, URBAN
-- **CardRarity**: COMMON, UNCOMMON, RARE, EPIC, LEGENDARY
+- **UserRole**: USER, ADMIN
+- **TimeOfDay**: day, night, both
+- **EvolutionStage**: baby, basic, stage1, stage2
+- **CardRarity**: Common, Uncommon, Rare, Double Rare, Illustration Rare, Super Rare, Special Illustration Rare, Immersive, Shiny Rare, Shiny Super Rare, Ultra Rare, Hyper Rare
 
 ---
 
 ## 🚀 Available Scripts
 
 ```bash
-# Development
-npm run dev              # Start development server with hot reload
+# Development (runs both backend and frontend)
+npm run dev              # Start both servers concurrently
+npm run dev:backend      # Start backend only with hot reload
+npm run dev:frontend     # Start frontend only (Vite dev server)
 
 # Build
-npm run build            # Build TypeScript to JavaScript
+npm run build            # Build TypeScript to JavaScript (backend)
 npm run start            # Start production server
+
+# Frontend (from frontend/ directory)
+cd frontend
+npm run dev              # Start Vite dev server
+npm run build            # Build frontend for production
+npm run preview          # Preview production build
 
 # Database
 npm run prisma:generate  # Generate Prisma Client
@@ -209,97 +280,30 @@ npm run prisma:migrate   # Run database migrations (dev)
 npm run prisma:migrate:deploy  # Deploy migrations (production)
 npm run prisma:studio    # Open Prisma Studio
 
+# Card Management
+npm run cards:use-local  # Load local TCG card images from zips
+
 # Quality
-npm run lint             # Type check without emitting files
 npm run type-check       # TypeScript type checking
 ```
 
 ---
 
-## 🐳 Docker Development
+## 🎮 How to Play
 
-### Using Docker Compose
-
-```bash
-# Start all services (PostgreSQL + API)
-docker-compose up -d
-
-# View logs
-docker-compose logs -f api
-
-# Stop services
-docker-compose down
-
-# Stop and remove volumes
-docker-compose down -v
-```
-
-### Building Docker Image
-
-```bash
-docker build -t pokemon-hotel-api .
-docker run -p 4000:4000 --env-file .env pokemon-hotel-api
-```
-
----
-
-## ☁️ AWS Deployment
-
-### Prerequisites
-
-1. AWS Account with appropriate permissions
-2. AWS CLI configured
-3. ECR repository created
-4. ECS cluster and service configured
-5. RDS PostgreSQL database (or use Prisma Accelerate)
-6. Secrets stored in AWS Secrets Manager
-
-### Initial Setup
-
-```bash
-# Make scripts executable
-chmod +x scripts/*.sh
-
-# Run initial AWS infrastructure setup
-./scripts/setup-aws.sh
-```
-
-### Manual Deployment
-
-```bash
-# Deploy to AWS ECS
-./scripts/deploy-aws.sh
-```
-
-### Environment Variables in AWS
-
-Store the following secrets in AWS Secrets Manager:
-
-- `pokemon-hotel/database-url` - PostgreSQL connection string
-- `pokemon-hotel/prisma-accelerate-url` - Prisma Accelerate URL
-
-### CI/CD Deployment
-
-The project includes GitHub Actions workflows that automatically:
-
-1. **Test** - Run type checking and build on every push/PR
-2. **Deploy** - Automatically deploy to AWS ECS on pushes to `main` branch
-
-Configure the following GitHub Secrets:
-
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
-
----
-
-## 🔐 Security Features
-
-- **Helmet** - Sets security HTTP headers
-- **CORS** - Configurable cross-origin resource sharing
-- **Rate Limiting** - Protects against brute force attacks
-- **Input Validation** - Type-safe validation with Zod (to be implemented)
-- **Error Handling** - Centralized error handling middleware
-- **Environment Variables** - Sensitive data stored securely
+1. **Register/Login** - Create an account or log in
+2. **Choose a Biome** - Select from 9 biomes (affects Pokemon pool)
+3. **Toggle Day/Night** - Some Pokemon only appear at certain times
+4. **Make Guesses** - You have 6 attempts to guess the correct Pokemon
+5. **Attribute Feedback**:
+   - 🟢 **Master Ball** - Correct attribute
+   - 🟡 **Great Ball** - Correct but wrong position (types only)
+   - 🔴 **Poke Ball** - Wrong attribute
+   - ⚪ **X** - Pokemon has no Type 2 (monotype)
+6. **Collect Cards** - After winning, choose 1 of 3 TCG cards
+   - First card is always the guessed Pokemon
+   - Card rarity depends on number of tries (Tier 1-6)
+7. **Complete Pokedex** - Track your collection of all 151 Kanto Pokemon cards
 
 ---
 
@@ -308,73 +312,79 @@ Configure the following GitHub Secrets:
 ### Health Check
 - `GET /health` - Server health status
 
-### Hotels
-- `GET /hotels` - List all hotels
-- `GET /hotels/:id` - Get hotel by ID
-- `POST /hotels` - Create a new hotel
+### Authentication
+- `POST /auth/register` - Register a new account
+- `POST /auth/login` - Login and receive JWT token
 
-### Future Endpoints
-- Trainer management
-- Booking system
-- Pokemon encounters
-- Card collection
-- Trading system
+### Game Flow
+- `GET /biomes` - List all biomes with day/night spawn counts
+- `POST /games` - Start a new Wordle game (choose biome & time)
+- `GET /games/:id` - Get game state
+- `POST /games/:id/guess` - Submit a guess
+- `POST /games/:id/capture` - Capture a card after winning
 
----
+### Collection
+- `GET /pokedex` - Get user's Pokedex with all cards
+- `GET /cards/:id` - Get specific card details
 
-## 🧪 Testing
-
-Testing setup is recommended for professional development. Consider adding:
-
-- **Jest** or **Vitest** - Testing framework
-- **Supertest** - API endpoint testing
-- **Prisma Mock** - Database mocking
+### User Management
+- `GET /users` - List all users (admin only)
+- `PATCH /users/:id/role` - Update user role (admin only)
 
 ---
 
-## 🤝 Contributing
+## 🔐 Security Features
 
-This is a learning project, but professional practices are encouraged:
-
-1. Create feature branches from `develop`
-2. Write clear commit messages
-3. Ensure code passes type checking
-4. Update documentation as needed
-5. Test locally before pushing
+- **JWT Authentication** - Secure token-based auth with configurable expiration
+- **Bcrypt Password Hashing** - Secure password storage
+- **Helmet** - Sets security HTTP headers
+- **CORS** - Configurable cross-origin resource sharing
+- **Rate Limiting** - Protects against brute force attacks
+- **Error Handling** - Centralized error handling middleware
+- **Environment Variables** - Sensitive data stored securely
 
 ---
 
-## 📚 Learning Resources
+## 🎨 UI/UX Features
 
-### Technologies Used
-
-- [Express.js Documentation](https://expressjs.com/)
-- [Prisma Documentation](https://www.prisma.io/docs)
-- [Prisma Accelerate](https://www.prisma.io/docs/accelerate)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
-- [AWS ECS Documentation](https://docs.aws.amazon.com/ecs/)
+- **Dark Theme** - Sleek dark mode with neon accents
+- **Animated Background** - Floating neon triangles on navbar
+- **Responsive Design** - Mobile-first approach with tablet/desktop optimization
+- **Visual Feedback** - Hover effects, active states, and smooth transitions
+- **Card Viewer** - Zoom and pan TCG cards
+- **Autocomplete Search** - Quick Pokemon lookup
+- **Filters** - Search by rarity, capture status
+- **Profile Customization** - 40 avatars and 20 banners across 5 Pokemon types
 
 ---
 
 ## 🗺️ Roadmap
 
-### Current Features
-- ✅ Basic hotel CRUD operations
-- ✅ Database schema for Pokemon Hotel features
-- ✅ Professional development setup
-- ✅ AWS deployment configuration
-- ✅ CI/CD pipeline
+### ✅ Completed Features
+- Full Wordle game logic with 6 attribute comparisons
+- Biome selection with day/night mechanics
+- TCG card collection with 12 rarity tiers
+- Tier-based reward system (1-6 tries)
+- Pity system for guaranteed rare cards
+- Pokedex tracker for all 151 Kanto Pokemon
+- User authentication and profiles
+- Admin user management
+- Avatar and banner customization
+- Card viewer with zoom/pan
+- Local card image support
+- Mobile-responsive design
 
-### Planned Features
-- [ ] Trainer authentication and management
-- [ ] Booking system with date validation
-- [ ] Pokemon encounter system based on biomes
-- [ ] Card collection and rarity system
-- [ ] Trainer leveling system
+### 🔜 Future Enhancements
+- [ ] Daily challenge mode
+- [ ] Leaderboards and statistics
 - [ ] Trading system
-- [ ] React frontend
-- [ ] Real-time notifications
-- [ ] Admin dashboard
+- [ ] More generations (beyond Gen I)
+- [ ] Shiny variants
+- [ ] Achievement system
+- [ ] Card favoriting
+- [ ] Export/share Pokedex progress
+- [ ] Sound effects and animations
+- [ ] Push notifications for daily challenges
 
 ---
 
@@ -393,4 +403,7 @@ Built as a learning project to master modern full-stack development practices.
 ## 🙏 Acknowledgments
 
 - Pokemon is a trademark of Nintendo/Creatures Inc./GAME FREAK inc.
+- Pokemon TCG is a trademark of The Pokemon Company
 - This project is for educational purposes only
+- Card data provided by [TCGdex](https://www.tcgdex.net/)
+- Pokemon data provided by [PokeAPI](https://pokeapi.co/)

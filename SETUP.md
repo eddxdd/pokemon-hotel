@@ -14,11 +14,11 @@ NODE_ENV=development
 # Database Configuration
 # For development without Accelerate, use direct PostgreSQL connection
 # When using Accelerate, change DATABASE_URL to use prisma:// protocol
-DATABASE_URL=postgresql://user:password@localhost:5432/pokemon_hotel?schema=public
+DATABASE_URL=postgresql://user:password@localhost:5432/master_ball?schema=public
 
 # Direct database connection for migrations and introspection
 # This should always use the direct postgresql:// connection
-DIRECT_DATABASE_URL=postgresql://user:password@localhost:5432/pokemon_hotel?schema=public
+DIRECT_DATABASE_URL=postgresql://user:password@localhost:5432/master_ball?schema=public
 
 # Frontend Configuration
 FRONTEND_URL=http://localhost:3000
@@ -37,7 +37,7 @@ npm install
 
 ```bash
 # Create database
-createdb pokemon_hotel
+createdb master_ball
 
 # Run migrations
 npm run prisma:migrate
@@ -70,7 +70,7 @@ npm run dev
    - Keep `DIRECT_DATABASE_URL` as your direct PostgreSQL connection for migrations
 
 2. **Run Database Migrations**:
-   - The schema has been expanded with all Pokemon Hotel features
+   - The schema has been expanded with all Master Ball features
    - Run `npm run prisma:migrate` to apply migrations
 
 3. **Install New Dependencies**:

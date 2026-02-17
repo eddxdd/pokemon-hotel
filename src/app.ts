@@ -6,8 +6,11 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 
 import healthRoutes from "./routes/health.js";
-import hotelRoutes from "./routes/hotels.js";
+import biomeRoutes from "./routes/biomes.js";
+import gameRoutes from "./routes/games.js";
+import pokedexRoutes from "./routes/pokedex.js";
 import authRoutes from "./routes/auth.js";
+import userRoutes from "./routes/users.js";
 import errorHandler from "./middleware/errorHandler.js";
 
 const app = express();
@@ -62,9 +65,12 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Routes
-app.use('/hotels', hotelRoutes);
+app.use('/biomes', biomeRoutes);
+app.use('/games', gameRoutes);
+app.use('/pokedex', pokedexRoutes);
 app.use('/health', healthRoutes);
 app.use('/auth', authRoutes);
+app.use('/users', userRoutes);
 
 // Error catcher (must be AFTER routes!)
 app.use(errorHandler);

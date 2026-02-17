@@ -1,37 +1,12 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Pokemon Wordle TCG - Prisma Schema
+// Database schema for Pokemon Wordle game with TCG card collection
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider  = "postgresql"
-}
-
-// Biome/Environment types (beach, mountain, forest, etc.)
-enum BiomeType {
-  BEACH
-  MOUNTAIN
-  FOREST
-  DESERT
-  OCEAN
-  GRASSLAND
-  CAVE
-  URBAN
-}
-
-// Card rarity tiers
-enum CardRarity {
-  COMMON
-  UNCOMMON
-  RARE
-  EPIC
-  LEGENDARY
+  provider = "postgresql"
 }
 
 // User roles for access control
@@ -54,150 +29,196 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Relations
-  bookings  Booking[]
-  cards     TrainerCard[]
-  reviews   Review[]
+  games             Game[]
+  userCards         UserCard[]
+  pokedexEntries    PokedexEntry[]
+  pityTracker       PityTracker?
   tradesAsSender    Trade[] @relation("TradeSender")
   tradesAsReceiver  Trade[] @relation("TradeReceiver")
 }
 
-// Hotel model - represents different hotels in different biomes
-model Hotel {
+// Biome model - different environments where Pokemon spawn
+model Biome {
   id          Int       @id @default(autoincrement())
-  name        String
-  city        String
-  country     String
-  biome       BiomeType
+  name        String    @unique
   description String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  // Relations
-  rooms       Room[]
-  bookings    Booking[]
-  reviews     Review[]
-}
-
-// Room model - individual rooms in hotels
-model Room {
-  id          Int      @id @default(autoincrement())
-  hotelId     Int
-  roomNumber  String
-  capacity    Int      @default(1)
-  pricePerNight Decimal @db.Decimal(10, 2)
-  isAvailable Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  hotel       Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
-  bookings    Booking[]
-
-  @@unique([hotelId, roomNumber])
-  @@index([hotelId])
-}
-
-// Booking model - reservations made by trainers
-model Booking {
-  id          Int      @id @default(autoincrement())
-  trainerId   Int
-  hotelId     Int
-  roomId      Int
-  checkIn     DateTime
-  checkOut    DateTime
-  totalPrice  Decimal  @db.Decimal(10, 2)
-  status      String   @default("confirmed") // confirmed, cancelled, completed
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  trainer     User     @relation(fields: [trainerId], references: [id], onDelete: Cascade)
-  hotel       Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
-  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  encounters  PokemonEncounter[]
-  review      Review?
-
-  @@index([trainerId])
-  @@index([hotelId])
-  @@index([checkIn, checkOut])
-}
-
-// Pokemon Card model - represents different Pokemon cards
-model PokemonCard {
-  id          Int       @id @default(autoincrement())
-  pokemonName String
-  pokedexNumber Int
-  rarity      CardRarity
   imageUrl    String?
-  description String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   // Relations
-  trainerCards TrainerCard[]
-  spawnRates   BiomeSpawnRate[]
-  encounters   PokemonEncounter[]
+  spawns      PokemonSpawn[]
+  games       Game[]
+}
 
-  @@unique([pokemonName, rarity])
+// Pokemon model - Pokemon that can be encountered in the Wordle game
+model Pokemon {
+  id              Int      @id @default(autoincrement())
+  name            String   @unique
+  pokedexNumber   Int
+  type1           String
+  type2           String?
+  evolutionStage  Int      // 1, 2, or 3
+  fullyEvolved    Boolean
+  color           String
+  generation      Int      // 1-9
+  imageUrl        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  spawns          PokemonSpawn[]
+  games           Game[]
+  cards           Card[]
+  guessesAsGuess  Guess[]
+
   @@index([pokedexNumber])
+  @@index([type1])
+  @@index([generation])
+}
+
+// PokemonSpawn - defines which Pokemon appear in which biomes at what time
+model PokemonSpawn {
+  id              Int      @id @default(autoincrement())
+  pokemonId       Int
+  biomeId         Int
+  timeOfDay       String   // "day", "night", "both"
+  spawnWeight     Float    @default(1.0)
+  createdAt       DateTime @default(now())
+
+  // Relations
+  pokemon         Pokemon  @relation(fields: [pokemonId], references: [id], onDelete: Cascade)
+  biome           Biome    @relation(fields: [biomeId], references: [id], onDelete: Cascade)
+
+  @@unique([pokemonId, biomeId, timeOfDay])
+  @@index([biomeId, timeOfDay])
+  @@index([pokemonId])
+}
+
+// Card model - Pokemon TCG cards from TCGdex
+model Card {
+  id              Int      @id @default(autoincrement())
+  tcgdexId        String   @unique
+  pokemonId       Int
+  pokemonName     String
+  setId           String
+  setName         String
+  rarity          String   // TCG rarity from TCGdex
+  tier            Int      // 1-6 based on performance tier
+  imageUrl        String
+  imageUrlLarge   String?
+  isFloor         Boolean  @default(false)  // Lowest rarity in tier
+  isCeiling       Boolean  @default(false)  // Highest rarity in tier
+  weight          Float    @default(1.0)    // Drop weight
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  pokemon         Pokemon  @relation(fields: [pokemonId], references: [id], onDelete: Cascade)
+  userCards       UserCard[]
+  pokedexEntries  PokedexEntry[]
+
+  @@index([pokemonId])
+  @@index([tier])
   @@index([rarity])
 }
 
-// TrainerCard model - cards owned by trainers (junction table)
-model TrainerCard {
-  id            Int      @id @default(autoincrement())
-  trainerId     Int
-  cardId        Int
-  quantity      Int      @default(1)
-  obtainedAt    DateTime @default(now())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+// Game model - represents a single Wordle game session
+model Game {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  biomeId        Int
+  timeOfDay      String   // "day" or "night"
+  pokemonId      Int
+  guessesUsed    Int?
+  tier           Int?     // 1-6 based on tries (1=best, 6=worst)
+  completed      Boolean  @default(false)
+  won            Boolean  @default(false)
+  offeredCardIds Json?    // Array of 3 card IDs offered after completion
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   // Relations
-  trainer       User      @relation(fields: [trainerId], references: [id], onDelete: Cascade)
-  card          PokemonCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  biome          Biome    @relation(fields: [biomeId], references: [id], onDelete: Cascade)
+  pokemon        Pokemon  @relation(fields: [pokemonId], references: [id], onDelete: Cascade)
+  guesses        Guess[]
+  capturedCard   UserCard?
 
-  @@unique([trainerId, cardId])
-  @@index([trainerId])
+  @@index([userId])
+  @@index([pokemonId])
+  @@index([completed])
+  @@index([createdAt])
+}
+
+// Guess model - individual guess attempts in a game
+model Guess {
+  id         Int      @id @default(autoincrement())
+  gameId     Int
+  guessNum   Int      // 1-6
+  pokemonId  Int
+  feedback   Json     // {type1: 'correct'|'partial'|'wrong', type2: ..., evolutionStage: ..., fullyEvolved: ..., color: ..., generation: ...}
+  createdAt  DateTime @default(now())
+
+  // Relations
+  game       Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  pokemon    Pokemon  @relation(fields: [pokemonId], references: [id], onDelete: Cascade)
+
+  @@index([gameId])
+  @@index([pokemonId])
+}
+
+// UserCard model - cards owned by users
+model UserCard {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  cardId    Int
+  gameId    Int      @unique
+  obtained  DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@index([userId, cardId])
   @@index([cardId])
 }
 
-// BiomeSpawnRate model - defines spawn rates for Pokemon in different biomes
-model BiomeSpawnRate {
-  id          Int      @id @default(autoincrement())
-  cardId      Int
-  biome       BiomeType
-  spawnChance Decimal  @db.Decimal(5, 4) // 0.0000 to 1.0000 (0% to 100%)
-  minLevel    Int      @default(1) // Minimum trainer level to encounter
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+// PokedexEntry model - tracks card discovery for Pokedex completion
+model PokedexEntry {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  cardId     Int
+  discovered DateTime @default(now())
 
   // Relations
-  card        PokemonCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card       Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
 
-  @@unique([cardId, biome])
-  @@index([biome])
+  @@unique([userId, cardId])
+  @@index([userId])
   @@index([cardId])
 }
 
-// PokemonEncounter model - tracks when trainers encounter Pokemon during bookings
-model PokemonEncounter {
-  id          Int      @id @default(autoincrement())
-  bookingId   Int
-  cardId      Int
-  rarity      CardRarity
-  encounteredAt DateTime @default(now())
+// PityTracker model - tracks pity system for gacha mechanics
+model PityTracker {
+  id                  Int       @id @default(autoincrement())
+  userId              Int       @unique
+  consecutiveTier6    Int       @default(0)
+  consecutiveTier5    Int       @default(0)
+  gamesWithoutCeiling Int       @default(0)  // Soft pity tracker
+  hardPityCounter     Int       @default(0)  // Hard pity at 10
+  totalGames          Int       @default(0)
+  lastCeilingPull     DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   // Relations
-  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  card        PokemonCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
-
-  @@index([bookingId])
-  @@index([cardId])
-  @@index([encounteredAt])
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// Trade model - for future trading system
+// Trade model - for future trading system (preserved)
 model Trade {
   id            Int      @id @default(autoincrement())
   senderId      Int
@@ -216,26 +237,4 @@ model Trade {
   @@index([senderId])
   @@index([receiverId])
   @@index([status])
-}
-
-// Review model - hotel reviews written by trainers after their stay
-model Review {
-  id          Int      @id @default(autoincrement())
-  bookingId   Int      @unique
-  trainerId   Int
-  hotelId     Int
-  rating      Int      // 1-5 stars
-  title       String?
-  comment     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  trainer     User     @relation(fields: [trainerId], references: [id], onDelete: Cascade)
-  hotel       Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
-
-  @@index([hotelId])
-  @@index([trainerId])
-  @@index([rating])
 }

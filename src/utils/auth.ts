@@ -28,6 +28,7 @@ export async function comparePassword(
  * JWT token payload structure
  */
 export interface JwtPayload {
+    id: number;  // Numeric user ID for database queries
     userId: string;
     username: string;
     email: string;
